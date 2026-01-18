@@ -1,0 +1,19 @@
+syntax = "proto3";
+
+package pricing;
+option go_package = "github.com/dwikikusuma/ticket-rush/common/gen/pricing/v1;pricingv1";
+
+message PriceRequest {
+  string seat_id = 1;
+  string event_id = 2;
+  float base_price = 3;
+}
+
+message PriceResponse {
+  int32 final_price = 1;
+  float multiplier = 2; // e.g., 1.5x surge
+}
+
+service PricingService {
+  rpc GetPrice (PriceRequest) returns (PriceResponse);
+}

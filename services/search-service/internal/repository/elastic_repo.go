@@ -5,7 +5,6 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"log"
 	"strconv"
 
 	"github.com/dwikikusuma/ticket-rush/services/search-service/internal/domain"
@@ -68,7 +67,7 @@ func (r *elasticRepo) SearchQuery(query string, limit int, cursor string) (*doma
 		r.client.Search.WithIndex("tickets"),
 		r.client.Search.WithBody(&buf),
 	)
-	log.Println(res)
+
 	if err != nil {
 		return nil, err
 	}
@@ -77,7 +76,6 @@ func (r *elasticRepo) SearchQuery(query string, limit int, cursor string) (*doma
 	if err := json.NewDecoder(res.Body).Decode(&result); err != nil {
 		return nil, err
 	}
-	log.Println(buf)
 	hits := result["hits"].(map[string]interface{})["hits"].([]interface{})
 	var tickets []domain.Ticket
 	var nextCursor string
