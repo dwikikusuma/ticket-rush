@@ -1,5 +1,7 @@
 package domain
 
+import "context"
+
 type Ticket struct {
 	ID        int    `json:"id"`
 	EventName string `json:"event_name"`
@@ -19,5 +21,9 @@ type SearchRepository interface {
 }
 
 type SearchService interface {
-	FindTickets(query string, limit int, cursor string) (SearchResult, error)
+	FindTickets(query string, limit int, cursor string) (*SearchResult, error)
+}
+
+type PricingClient interface {
+	GetRealTimePrice(ctx context.Context, ticket *Ticket) (int32, float32, error)
 }

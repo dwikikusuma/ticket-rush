@@ -4,6 +4,7 @@ import (
 	"log"
 	"sync"
 
+	"github.com/dwikikusuma/ticket-rush/services/search-service/internal/adapter"
 	ticketHandler "github.com/dwikikusuma/ticket-rush/services/search-service/internal/handler"
 	"github.com/dwikikusuma/ticket-rush/services/search-service/internal/repository"
 	ticketSvc "github.com/dwikikusuma/ticket-rush/services/search-service/internal/service"
@@ -12,8 +13,9 @@ import (
 )
 
 const (
-	elasticURL = "http://localhost:9200"
-	port       = "8081"
+	elasticURL  = "http://localhost:9200"
+	port        = "8081"
+	pricingAddr = "50051"
 )
 
 func main() {
@@ -28,7 +30,12 @@ func main() {
 	}
 
 	elasticRepo := repository.NewElasticRepo(es)
-	service := ticketSvc.NewSearchService(elasticRepo)
+	pricingClient, err := adapter.NewPricingClient(pricingAddr)
+	if err != nil {
+		log.Fatalf("Error creating pricing client: %v", err)
+	}
+
+	service := ticketSvc.NewSearchService(elasticRepo, pricingClient)
 	handler := ticketHandler.NewSearchHandler(service)
 
 	r := gin.Default()

@@ -11,7 +11,7 @@ message PriceRequest {
 
 message PriceResponse {
   int32 final_price = 1;
-  float multiplier = 2; // e.g., 1.5x surge
+  float multiplier = 2;
 }
 
 service PricingService {
