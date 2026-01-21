@@ -4,7 +4,7 @@ import time
 import random
 import sys
 import os
-
+import redis
 import pricing_pb2
 import pricing_pb2_grpc
 from grpc_reflection.v1alpha import reflection
@@ -13,16 +13,25 @@ sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 
 class PricingService(pricing_pb2_grpc.PricingServiceServicer):
     
-    def GetPrice(self, request: pricing_pb2.PriceRequest, context) -> pricing_pb2.PriceResponse:
+    def __init__(self):
+        self.r = redis.Redis(host='localhost', port=6379, db=0, decode_responses=True)
+        print("🔌 Connected to Redis")
+
+    def GetPrice(self, request, context):
+        event_id = request.event_id
         
-        print(f"💰 Calculating price for: {request.event_id} (Seat: {request.seat_id})")
+        view_count_key = f"view_count:{event_id}"
+        current_views = self.r.incr(view_count_key)
         
-        is_surge = random.random() < 0.3
-        multiplier = 1.5 if is_surge else 1.0
+        print(f"💰 Calculating price for Event: {event_id} (Views: {current_views})")
+
+        if current_views > 10:
+            print(f"   🔥 High demand detected! ({current_views} views)")
+            multiplier = 1.5
         
         original_price = request.base_price
         final_price = int(original_price * multiplier)
-
+        
         return pricing_pb2.PriceResponse(
             final_price=final_price,
             multiplier=multiplier

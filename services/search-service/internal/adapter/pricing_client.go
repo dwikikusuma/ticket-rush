@@ -7,6 +7,7 @@ import (
 	pricingv1 "github.com/dwikikusuma/ticket-rush/common/gen/pricing/v1"
 	"github.com/dwikikusuma/ticket-rush/services/search-service/internal/domain"
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/credentials/insecure"
 )
 
 type grpcPricingClient struct {
@@ -14,7 +15,7 @@ type grpcPricingClient struct {
 }
 
 func NewPricingClient(addr string) (domain.PricingClient, error) {
-	conn, err := grpc.NewClient(addr)
+	conn, err := grpc.NewClient(addr, grpc.WithTransportCredentials(insecure.NewCredentials()))
 	if err != nil {
 		return nil, err
 	}
