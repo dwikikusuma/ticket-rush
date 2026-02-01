@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/dwikikusuma/ticket-rush/common/pkg/db"
+	"github.com/dwikikusuma/ticket-rush/services/auth-service/internal/config"
 	"github.com/dwikikusuma/ticket-rush/services/auth-service/internal/handler"
 	"github.com/dwikikusuma/ticket-rush/services/auth-service/internal/repository"
 	"github.com/dwikikusuma/ticket-rush/services/auth-service/internal/service"
@@ -44,6 +45,7 @@ func main() {
 	userRepo := repository.NewUserRepo(dbConn)
 	authSvc := service.NewAuthService(userRepo)
 	authHandler := handler.NewAuthHandler(authSvc)
+	config.LoadConfig()
 
 	r := gin.Default()
 	authHandler.RegisterRoutes(r)

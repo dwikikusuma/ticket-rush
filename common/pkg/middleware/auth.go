@@ -30,7 +30,7 @@ func AuthMiddleware() gin.HandlerFunc {
 		tokenStr := parts[1]
 		secret := os.Getenv("JWT_SECRET")
 		if secret == "" {
-			secret = "dev_123"
+			secret = "dev-123"
 		}
 
 		token, err := jwt.Parse(tokenStr, func(token *jwt.Token) (interface{}, error) {
@@ -41,23 +41,24 @@ func AuthMiddleware() gin.HandlerFunc {
 		})
 
 		if err != nil || !token.Valid {
-			c.AbortWithStatusJSON(401, gin.H{"error": "Unauthorized"})
+			c.AbortWithStatusJSON(401, gin.H{"error": "Unauthorized", "err": err.Error()})
+			return
 		}
 
 		if claims, ok := token.Claims.(jwt.MapClaims); ok {
-			userId, ok := claims["sub"].(float64)
+			userId, ok := claims["sub"].(string)
 			if !ok {
-				c.AbortWithStatusJSON(401, gin.H{"error": "Unauthorized"})
+				c.AbortWithStatusJSON(401, gin.H{"error": "Unauthorized", "err": "invalid user id"})
 				return
 			}
 
 			email, ok := claims["email"].(string)
 			if !ok {
-				c.AbortWithStatusJSON(401, gin.H{"error": "Unauthorized"})
+				c.AbortWithStatusJSON(401, gin.H{"error": "Unauthorized", "err": "invalid email"})
 				return
 			}
 
-			c.Set("userId", int(userId))
+			c.Set("userId", userId)
 			c.Set("email", email)
 
 			c.Next()

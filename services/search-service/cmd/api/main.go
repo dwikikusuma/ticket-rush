@@ -41,12 +41,6 @@ func main() {
 	handler := ticketHandler.NewSearchHandler(service)
 
 	r := gin.Default()
-	r.Use(
-		middleware.RequestID(),
-		middleware.TimeOut(3*time.Second),
-		gin.Logger(),
-		gin.Recovery(),
-	)
 	r.Use(func(c *gin.Context) {
 		c.Writer.Header().Set("Access-Control-Allow-Origin", "*")
 		c.Writer.Header().Set("Access-Control-Allow-Methods", "GET, POST, OPTIONS")
@@ -65,7 +59,13 @@ func main() {
 	})
 
 	protected := r.Group("/")
-	protected.Use(middleware.AuthMiddleware())
+	protected.Use(
+		middleware.AuthMiddleware(),
+		middleware.RequestID(),
+		middleware.TimeOut(3*time.Second),
+		gin.Logger(),
+		gin.Recovery(),
+	)
 	handler.RegisterRoutes(protected)
 
 	var wg sync.WaitGroup
