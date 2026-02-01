@@ -3,7 +3,9 @@ package main
 import (
 	"log"
 	"sync"
+	"time"
 
+	"github.com/dwikikusuma/ticket-rush/common/pkg/middleware"
 	"github.com/dwikikusuma/ticket-rush/services/search-service/internal/adapter"
 	ticketHandler "github.com/dwikikusuma/ticket-rush/services/search-service/internal/handler"
 	"github.com/dwikikusuma/ticket-rush/services/search-service/internal/repository"
@@ -39,6 +41,12 @@ func main() {
 	handler := ticketHandler.NewSearchHandler(service)
 
 	r := gin.Default()
+	r.Use(
+		middleware.RequestID(),
+		middleware.TimeOut(3*time.Second),
+		gin.Logger(),
+		gin.Recovery(),
+	)
 	r.Use(func(c *gin.Context) {
 		c.Writer.Header().Set("Access-Control-Allow-Origin", "*")
 		c.Writer.Header().Set("Access-Control-Allow-Methods", "GET, POST, OPTIONS")
@@ -51,7 +59,14 @@ func main() {
 
 		c.Next()
 	})
-	handler.RegisterRoutes(r)
+
+	r.GET("/health", func(c *gin.Context) {
+		c.JSON(200, gin.H{"status": "Search Service is Alive"})
+	})
+
+	protected := r.Group("/")
+	protected.Use(middleware.AuthMiddleware())
+	handler.RegisterRoutes(protected)
 
 	var wg sync.WaitGroup
 	wg.Add(1)

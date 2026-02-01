@@ -22,8 +22,8 @@ func AuthMiddleware() gin.HandlerFunc {
 			return
 		}
 		parts := strings.Split(header, " ")
-		if len(parts) != 1 || parts[0] != "Bearer" {
-			c.AbortWithStatusJSON(401, gin.H{"error": "Unauthorized"})
+		if len(parts) != 2 || parts[0] != "Bearer" {
+			c.AbortWithStatusJSON(401, gin.H{"error": "Invalid token format"})
 			return
 		}
 

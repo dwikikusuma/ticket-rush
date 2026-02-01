@@ -18,7 +18,7 @@ func NewSearchHandler(service domain.SearchService) *SearchHandler {
 	}
 }
 
-func (h *SearchHandler) RegisterRoutes(r *gin.Engine) {
+func (h *SearchHandler) RegisterRoutes(r gin.IRouter) {
 	r.GET("/search", h.Search)
 }
 
