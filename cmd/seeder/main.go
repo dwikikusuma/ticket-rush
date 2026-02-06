@@ -12,7 +12,7 @@ import (
 )
 
 const dbURL = "postgres://user:password@localhost:5432/ticket_db"
-const totalRows = 1_000_000
+const totalRows = 1_000_000 // 1 Million
 
 func main() {
 	ctx := context.Background()
@@ -25,10 +25,7 @@ func main() {
 	}
 	defer conn.Close(ctx)
 
-	// --- REMOVED: CREATE TABLE Logic ---
-	// We assume 'make migrate-up' was run before this.
-
-	// 2. Clear existing data (Optional: good for repeated tests)
+	// 2. Clear existing data
 	fmt.Println("🧹 Clearing old data...")
 	_, err = conn.Exec(ctx, "TRUNCATE TABLE tickets;")
 	if err != nil {
@@ -38,7 +35,24 @@ func main() {
 	// 3. Bulk Insert
 	fmt.Printf("🚀 Starting Seed of %d rows...\n", totalRows)
 	startTime := time.Now()
+
 	rowsGenerated := 0
+
+	// --- STATE VARIABLES ---
+	var (
+		currentEventName    string
+		currentStadium      string
+		currentEventDate    time.Time
+		currentPrice        int
+		seatsInCurrentEvent int
+		currentSeatIndex    int
+		eventGlobalCounter  int // NEW: Tracks how many events we've created total
+	)
+
+	// Initialize to force creation on first loop
+	seatsInCurrentEvent = 0
+	currentSeatIndex = 0
+	eventGlobalCounter = 0
 
 	count, err := conn.CopyFrom(
 		ctx,
@@ -48,17 +62,43 @@ func main() {
 			if rowsGenerated >= totalRows {
 				return nil, nil
 			}
-			rowsGenerated++
-			if rowsGenerated%100000 == 0 {
-				fmt.Printf("   ... %d rows\n", rowsGenerated)
+
+			// --- CHECK IF WE NEED A NEW EVENT ---
+			if currentSeatIndex >= seatsInCurrentEvent {
+				eventGlobalCounter++ // Increment unique event ID
+
+				// 1. Generate new Event details with UNIQUE ID
+				// "Concert: Rock #1", "Concert: Jazz #2", etc.
+				// This prevents collision even if Faker returns the same word twice.
+				currentEventName = fmt.Sprintf("Concert: %s #%d", faker.Word(), eventGlobalCounter)
+
+				currentStadium = "Stadium " + faker.Word()
+				currentEventDate = time.Now().AddDate(0, 0, rand.Intn(90))
+
+				// 2. Randomize seats for this event (between 100 and 2000)
+				seatsInCurrentEvent = rand.Intn(1900) + 100
+
+				// 3. Set Price
+				currentPrice = rand.Intn(200000) + 50000
+
+				// 4. Reset seat counter
+				currentSeatIndex = 0
 			}
+
+			currentSeatIndex++
+			rowsGenerated++
+
+			if rowsGenerated%100000 == 0 {
+				fmt.Printf("   ... %d rows generated\n", rowsGenerated)
+			}
+
 			return []any{
-				"Concert: " + faker.Word(),
-				"Stadium " + faker.Word(),
-				rand.Intn(200000) + 50000,
-				fmt.Sprintf("Seat-%d", rowsGenerated),
+				currentEventName,
+				currentStadium,
+				currentPrice,
+				fmt.Sprintf("Seat-%d", currentSeatIndex),
 				"AVAILABLE",
-				time.Now().AddDate(0, 0, rand.Intn(90)),
+				currentEventDate,
 			}, nil
 		}),
 	)

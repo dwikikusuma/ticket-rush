@@ -56,3 +56,7 @@ func (s *searchService) FindTickets(query string, limit int, cursor string) (*do
 func (s *searchService) FindTicketByID(ctx context.Context, id int) (*domain.Ticket, error) {
 	return s.dbRepo.GetTicketByID(ctx, id)
 }
+
+func (s *searchService) FindTicketBySeatAndEvent(ctx context.Context, eventName string, seatID string) (*domain.Ticket, error) {
+	return s.dbRepo.GetEventSeat(ctx, eventName, seatID)
+}

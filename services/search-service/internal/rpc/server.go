@@ -19,17 +19,30 @@ func NewTicketRpc(svc domain.SearchService) *TicketRpc {
 }
 
 func (r *TicketRpc) GetTicket(ctx context.Context, req *pb.TicketRequest) (*pb.TicketResponse, error) {
-	ticket, err := r.svc.FindTicketByID(ctx, int(req.EventId))
+	ticket, err := r.svc.FindTicketByID(ctx, int(req.TicketId))
 	if err != nil {
-		return nil, status.Errorf(codes.NotFound, "ticket not found for ID %d: %v", req.EventId, err)
+		return nil, status.Errorf(codes.NotFound, "ticket not found for ID %d: %v", req.TicketId, err)
 	}
 
+	return r.ticketToProto(*ticket), nil
+}
+
+func (r *TicketRpc) GetTicketBySeatAndEvent(ctx context.Context, req *pb.TicketBySeatAndEventRequest) (*pb.TicketResponse, error) {
+	ticket, err := r.svc.FindTicketBySeatAndEvent(ctx, req.EventName, req.SeatId)
+	if err != nil {
+		return nil, status.Errorf(codes.NotFound, "ticket not found for event %s and seat %s: %v", req.EventName, req.SeatId, err)
+	}
+
+	return r.ticketToProto(*ticket), nil
+}
+
+func (r *TicketRpc) ticketToProto(t domain.Ticket) *pb.TicketResponse {
 	return &pb.TicketResponse{
-		TicketId:  int32(ticket.ID),
-		EventName: ticket.EventName,
-		Stadium:   ticket.Stadium,
-		Price:     int64(ticket.Price),
-		SeatId:    ticket.SeatID,
-		Status:    ticket.Status,
-	}, nil
+		TicketId:  int32(t.ID),
+		EventName: t.EventName,
+		Stadium:   t.Stadium,
+		Price:     int64(t.Price),
+		SeatId:    t.SeatID,
+		Status:    t.Status,
+	}
 }
