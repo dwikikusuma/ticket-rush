@@ -18,11 +18,12 @@ import (
 	"github.com/elastic/go-elasticsearch/v8"
 	"github.com/gin-gonic/gin"
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/reflection"
 )
 
 const (
 	elasticURL  = "http://localhost:9200"
-	port        = "8081"
+	port        = "8083"
 	pricingAddr = "50051"
 	rpcAddr     = "50061"
 
@@ -51,9 +52,10 @@ func main() {
 	grpcServer := grpc.NewServer()
 	rpc := ticketRPC.NewTicketRpc(service)
 	ticketV1.RegisterTicketServiceServer(grpcServer, rpc)
+	reflection.Register(grpcServer)
 
 	r := gin.Default()
-	lis, err := net.Listen("tcp", rpcAddr)
+	lis, err := net.Listen("tcp", ":"+rpcAddr)
 	if err != nil {
 		log.Fatalf("Failed to listen on %s: %v", rpcAddr, err)
 	}
@@ -97,7 +99,7 @@ func main() {
 	wg.Add(1)
 	go func() {
 		defer wg.Done()
-		log.Printf("Starting gRPC server on port %s", pricingAddr)
+		log.Printf("Starting gRPC server on port %s", rpcAddr)
 
 		if err := grpcServer.Serve(lis); err != nil {
 			log.Fatalf("Failed to start gRPC server: %v", err)

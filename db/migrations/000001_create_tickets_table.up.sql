@@ -5,7 +5,8 @@ CREATE TABLE IF NOT EXISTS tickets (
     price INT,
     seat_id VARCHAR(50),
     status VARCHAR(20) DEFAULT 'AVAILABLE',
-    event_date TIMESTAMP
+    event_date TIMESTAMP,
+    constraint unique_seat_event UNIQUE (seat_id, event_name)
 );
 
 -- Add an index for the search optimization (we will see why later)
