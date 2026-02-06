@@ -22,8 +22,13 @@ type SearchRepository interface {
 
 type SearchService interface {
 	FindTickets(query string, limit int, cursor string) (*SearchResult, error)
+	FindTicketByID(ctx context.Context, id int) (*Ticket, error)
 }
 
 type PricingClient interface {
 	GetRealTimePrice(ctx context.Context, ticket *Ticket) (int32, float32, error)
+}
+
+type TicketRepo interface {
+	GetTicketByID(ctx context.Context, id int) (*Ticket, error)
 }

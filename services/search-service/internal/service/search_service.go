@@ -9,13 +9,15 @@ import (
 
 type searchService struct {
 	repo          domain.SearchRepository
+	dbRepo        domain.TicketRepo
 	pricingClient domain.PricingClient
 }
 
-func NewSearchService(repo domain.SearchRepository, client domain.PricingClient) domain.SearchService {
+func NewSearchService(repo domain.SearchRepository, client domain.PricingClient, dbRepo domain.TicketRepo) domain.SearchService {
 	return &searchService{
 		repo:          repo,
 		pricingClient: client,
+		dbRepo:        dbRepo,
 	}
 }
 
@@ -49,4 +51,8 @@ func (s *searchService) FindTickets(query string, limit int, cursor string) (*do
 
 	wg.Wait()
 	return result, nil
+}
+
+func (s *searchService) FindTicketByID(ctx context.Context, id int) (*domain.Ticket, error) {
+	return s.dbRepo.GetTicketByID(ctx, id)
 }
