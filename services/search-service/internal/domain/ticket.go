@@ -24,7 +24,7 @@ type SearchService interface {
 	FindTickets(query string, limit int, cursor string) (*SearchResult, error)
 	FindTicketByID(ctx context.Context, id int) (*Ticket, error)
 	FindTicketBySeatAndEvent(ctx context.Context, eventName string, seatID string) (*Ticket, error)
-	UpdateTicketStatusToSold(ctx context.Context, id int) error
+	UpdateTicketStatus(ctx context.Context, id int, status string) error
 }
 
 type PricingClient interface {
@@ -34,5 +34,5 @@ type PricingClient interface {
 type TicketRepo interface {
 	GetTicketByID(ctx context.Context, id int) (*Ticket, error)
 	GetEventSeat(ctx context.Context, eventName string, seatID string) (*Ticket, error)
-	UpdateTicketStatusToSold(ctx context.Context, id int) error
+	UpdateTicketStatus(ctx context.Context, id int, status string) error
 }

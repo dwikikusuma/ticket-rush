@@ -37,13 +37,13 @@ func (r *TicketRpc) GetTicketBySeatAndEvent(ctx context.Context, req *pb.TicketB
 }
 
 func (r *TicketRpc) UpdateTicketStatus(ctx context.Context, req *pb.UpdateTicketStatusRequest) (*pb.UpdateTicketStatusResponse, error) {
-	if req.Status == "Sold" {
-		err := r.svc.UpdateTicketStatusToSold(ctx, int(req.TicketId))
+	if req.Status == "Sold" || req.Status == "AVAILABLE" {
+		err := r.svc.UpdateTicketStatus(ctx, int(req.TicketId), req.Status)
 		if err != nil {
 			return nil, status.Errorf(codes.Internal, "failed to update ticket status to Sold for ID %d: %v", req.TicketId, err)
 		}
 		return &pb.UpdateTicketStatusResponse{
-			Status:   "Sold",
+			Status:   req.Status,
 			TicketId: req.TicketId,
 		}, nil
 	} else {

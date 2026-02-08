@@ -2,6 +2,7 @@ package service
 
 import (
 	"context"
+	"errors"
 	"sync"
 
 	"github.com/dwikikusuma/ticket-rush/services/search-service/internal/domain"
@@ -61,6 +62,9 @@ func (s *searchService) FindTicketBySeatAndEvent(ctx context.Context, eventName 
 	return s.dbRepo.GetEventSeat(ctx, eventName, seatID)
 }
 
-func (s *searchService) UpdateTicketStatusToSold(ctx context.Context, id int) error {
-	return s.dbRepo.UpdateTicketStatusToSold(ctx, id)
+func (s *searchService) UpdateTicketStatus(ctx context.Context, id int, status string) error {
+	if status != "Sold" && status != "AVAILABLE" {
+		return errors.New("invalid status")
+	}
+	return s.dbRepo.UpdateTicketStatus(ctx, id, status)
 }

@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"database/sql"
 	"log"
 	"time"
@@ -12,6 +13,7 @@ import (
 	"github.com/dwikikusuma/ticket-rush/services/booking-service/internal/repository"
 	"github.com/dwikikusuma/ticket-rush/services/booking-service/internal/service"
 	"github.com/gin-gonic/gin"
+	"github.com/redis/go-redis/v9"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
 )
@@ -30,9 +32,10 @@ func main() {
 		log.Fatalf("Failed to connect to ticket service: %v", err)
 	}
 	ticketSVC := ticketV1.NewTicketServiceClient(ticketConn)
+	redisClient := newRedisClient()
 
 	bookRepo := repository.NewBookingRepo(dbConn)
-	bookSvc := service.NewBookingService(bookRepo, ticketSVC)
+	bookSvc := service.NewBookingService(bookRepo, ticketSVC, redisClient)
 	handler := handler2.NewBookingHandler(bookSvc)
 
 	r := gin.Default()
@@ -65,4 +68,20 @@ func openDBConnection() *sql.DB {
 		log.Fatalf("Failed to connect to database: %v", err)
 	}
 	return conn
+}
+
+func newRedisClient() *redis.Client {
+	rc := redis.NewClient(&redis.Options{
+		Addr:     "localhost:6379",
+		Password: "",
+		DB:       0,
+	})
+
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+	if err := rc.Ping(ctx).Err(); err != nil {
+		log.Fatalf("Failed to connect to Redis: %v", err)
+	}
+
+	return rc
 }
