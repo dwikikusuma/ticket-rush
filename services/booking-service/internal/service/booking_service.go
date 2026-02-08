@@ -40,12 +40,23 @@ func (s *BookingService) CreateBooking(ctx context.Context, userID, eventName, s
 
 	err = s.repo.CreateBooking(ctx, domain.Booking{
 		UserID:   userID,
-		Status:   "Pending",
+		Status:   "Booked",
 		TicketID: int(ticketDetail.TicketId),
 	})
 
 	if err != nil {
 		log.Printf("failed to create booking: %v", err)
+		return err
+	}
+
+	_, err = s.ticketSvc.UpdateTicketStatus(ctx, &ticketPB.UpdateTicketStatusRequest{
+		TicketId: ticketDetail.TicketId,
+		Status:   "Sold",
+	})
+
+	if err != nil {
+		log.Printf("failed to update ticket status: %v", err)
+		_ = s.repo.UpdateBookingStatusFailed(ctx, userID)
 		return err
 	}
 

@@ -35,3 +35,19 @@ func (q *Queries) CreateBooking(ctx context.Context, arg CreateBookingParams) (B
 	)
 	return i, err
 }
+
+const updateBookingStatus = `-- name: UpdateBookingStatus :exec
+UPDATE bookings
+SET status = $1
+WHERE id = $2
+`
+
+type UpdateBookingStatusParams struct {
+	Status string    `json:"status"`
+	ID     uuid.UUID `json:"id"`
+}
+
+func (q *Queries) UpdateBookingStatus(ctx context.Context, arg UpdateBookingStatusParams) error {
+	_, err := q.db.ExecContext(ctx, updateBookingStatus, arg.Status, arg.ID)
+	return err
+}

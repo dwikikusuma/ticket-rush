@@ -10,6 +10,7 @@ import (
 
 type Querier interface {
 	CreateBooking(ctx context.Context, arg CreateBookingParams) (Booking, error)
+	UpdateBookingStatus(ctx context.Context, arg UpdateBookingStatusParams) error
 }
 
 var _ Querier = (*Queries)(nil)

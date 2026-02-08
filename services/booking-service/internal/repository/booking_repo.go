@@ -33,3 +33,23 @@ func (r *bookingRepo) CreateBooking(ctx context.Context, req domain.Booking) err
 
 	return err
 }
+
+func (r *bookingRepo) UpdateBookingStatusFailed(ctx context.Context, bookingID string) error {
+	bookingUUID, err := uuid.Parse(bookingID)
+	if err != nil {
+		log.Printf("invalid booking ID: %v", err)
+		return err
+	}
+
+	err = r.db.UpdateBookingStatus(ctx, bookingDB.UpdateBookingStatusParams{
+		Status: "Failed",
+		ID:     bookingUUID,
+	})
+
+	if err != nil {
+		log.Printf("failed to update booking status: %v", err)
+		return err
+	}
+
+	return nil
+}
