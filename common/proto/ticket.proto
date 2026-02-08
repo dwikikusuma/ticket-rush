@@ -6,6 +6,7 @@ option go_package = "github.com/dwikikusuma/ticket-rush/common/gen/ticket/v1;tic
 service TicketService {
   rpc GetTicket (TicketRequest) returns (TicketResponse);
   rpc GetTicketBySeatAndEvent (TicketBySeatAndEventRequest) returns (TicketResponse);
+  rpc UpdateTicketStatus (UpdateTicketStatusRequest) returns (UpdateTicketStatusResponse);
 }
 
 message TicketRequest {
@@ -24,4 +25,14 @@ message TicketResponse {
 message TicketBySeatAndEventRequest {
   string event_name = 1;
   string seat_id = 2;
+}
+
+message UpdateTicketStatusRequest {
+  int32 ticket_id = 1;
+  string status = 2;
+}
+
+message UpdateTicketStatusResponse {
+  int32 ticket_id = 1;
+  string status = 2;
 }

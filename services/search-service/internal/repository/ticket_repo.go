@@ -52,3 +52,11 @@ func (r *ticketRepo) GetEventSeat(ctx context.Context, eventName string, seatID 
 		Status:    ticket.Status.String,
 	}, nil
 }
+
+func (r *ticketRepo) UpdateTicketStatusToSold(ctx context.Context, id int) error {
+	params := ticketDB.UpdateTicketStatusParams{
+		ID:     int32(id),
+		Status: sql.NullString{String: "Sold", Valid: true},
+	}
+	return r.db.UpdateTicketStatus(ctx, params)
+}

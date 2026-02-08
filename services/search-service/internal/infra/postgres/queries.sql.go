@@ -56,3 +56,19 @@ func (q *Queries) GetTicketBySeatAndEvent(ctx context.Context, arg GetTicketBySe
 	)
 	return i, err
 }
+
+const updateTicketStatus = `-- name: UpdateTicketStatus :exec
+UPDATE tickets
+SET status = $1
+WHERE id = $2
+`
+
+type UpdateTicketStatusParams struct {
+	Status sql.NullString `json:"status"`
+	ID     int32          `json:"id"`
+}
+
+func (q *Queries) UpdateTicketStatus(ctx context.Context, arg UpdateTicketStatusParams) error {
+	_, err := q.db.ExecContext(ctx, updateTicketStatus, arg.Status, arg.ID)
+	return err
+}

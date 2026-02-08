@@ -21,6 +21,7 @@ const _ = grpc.SupportPackageIsVersion9
 const (
 	TicketService_GetTicket_FullMethodName               = "/ticket.TicketService/GetTicket"
 	TicketService_GetTicketBySeatAndEvent_FullMethodName = "/ticket.TicketService/GetTicketBySeatAndEvent"
+	TicketService_UpdateTicketStatus_FullMethodName      = "/ticket.TicketService/UpdateTicketStatus"
 )
 
 // TicketServiceClient is the client API for TicketService service.
@@ -29,6 +30,7 @@ const (
 type TicketServiceClient interface {
 	GetTicket(ctx context.Context, in *TicketRequest, opts ...grpc.CallOption) (*TicketResponse, error)
 	GetTicketBySeatAndEvent(ctx context.Context, in *TicketBySeatAndEventRequest, opts ...grpc.CallOption) (*TicketResponse, error)
+	UpdateTicketStatus(ctx context.Context, in *UpdateTicketStatusRequest, opts ...grpc.CallOption) (*UpdateTicketStatusResponse, error)
 }
 
 type ticketServiceClient struct {
@@ -59,12 +61,23 @@ func (c *ticketServiceClient) GetTicketBySeatAndEvent(ctx context.Context, in *T
 	return out, nil
 }
 
+func (c *ticketServiceClient) UpdateTicketStatus(ctx context.Context, in *UpdateTicketStatusRequest, opts ...grpc.CallOption) (*UpdateTicketStatusResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(UpdateTicketStatusResponse)
+	err := c.cc.Invoke(ctx, TicketService_UpdateTicketStatus_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // TicketServiceServer is the server API for TicketService service.
 // All implementations must embed UnimplementedTicketServiceServer
 // for forward compatibility.
 type TicketServiceServer interface {
 	GetTicket(context.Context, *TicketRequest) (*TicketResponse, error)
 	GetTicketBySeatAndEvent(context.Context, *TicketBySeatAndEventRequest) (*TicketResponse, error)
+	UpdateTicketStatus(context.Context, *UpdateTicketStatusRequest) (*UpdateTicketStatusResponse, error)
 	mustEmbedUnimplementedTicketServiceServer()
 }
 
@@ -80,6 +93,9 @@ func (UnimplementedTicketServiceServer) GetTicket(context.Context, *TicketReques
 }
 func (UnimplementedTicketServiceServer) GetTicketBySeatAndEvent(context.Context, *TicketBySeatAndEventRequest) (*TicketResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetTicketBySeatAndEvent not implemented")
+}
+func (UnimplementedTicketServiceServer) UpdateTicketStatus(context.Context, *UpdateTicketStatusRequest) (*UpdateTicketStatusResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method UpdateTicketStatus not implemented")
 }
 func (UnimplementedTicketServiceServer) mustEmbedUnimplementedTicketServiceServer() {}
 func (UnimplementedTicketServiceServer) testEmbeddedByValue()                       {}
@@ -138,6 +154,24 @@ func _TicketService_GetTicketBySeatAndEvent_Handler(srv interface{}, ctx context
 	return interceptor(ctx, in, info, handler)
 }
 
+func _TicketService_UpdateTicketStatus_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(UpdateTicketStatusRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(TicketServiceServer).UpdateTicketStatus(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: TicketService_UpdateTicketStatus_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(TicketServiceServer).UpdateTicketStatus(ctx, req.(*UpdateTicketStatusRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // TicketService_ServiceDesc is the grpc.ServiceDesc for TicketService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -152,6 +186,10 @@ var TicketService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "GetTicketBySeatAndEvent",
 			Handler:    _TicketService_GetTicketBySeatAndEvent_Handler,
+		},
+		{
+			MethodName: "UpdateTicketStatus",
+			Handler:    _TicketService_UpdateTicketStatus_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

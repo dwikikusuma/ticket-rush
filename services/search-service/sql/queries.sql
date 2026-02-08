@@ -7,3 +7,8 @@ WHERE id = $1;
 SELECT id, event_name, stadium, price, seat_id, status, event_date
 FROM tickets
 WHERE seat_id = $1 AND event_name = $2;
+
+-- name: UpdateTicketStatus :exec
+UPDATE tickets
+SET status = $1
+WHERE id = $2;

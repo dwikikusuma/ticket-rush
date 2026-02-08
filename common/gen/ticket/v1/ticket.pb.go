@@ -201,6 +201,110 @@ func (x *TicketBySeatAndEventRequest) GetSeatId() string {
 	return ""
 }
 
+type UpdateTicketStatusRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	TicketId      int32                  `protobuf:"varint,1,opt,name=ticket_id,json=ticketId,proto3" json:"ticket_id,omitempty"`
+	Status        string                 `protobuf:"bytes,2,opt,name=status,proto3" json:"status,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *UpdateTicketStatusRequest) Reset() {
+	*x = UpdateTicketStatusRequest{}
+	mi := &file_ticket_proto_msgTypes[3]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *UpdateTicketStatusRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*UpdateTicketStatusRequest) ProtoMessage() {}
+
+func (x *UpdateTicketStatusRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_ticket_proto_msgTypes[3]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use UpdateTicketStatusRequest.ProtoReflect.Descriptor instead.
+func (*UpdateTicketStatusRequest) Descriptor() ([]byte, []int) {
+	return file_ticket_proto_rawDescGZIP(), []int{3}
+}
+
+func (x *UpdateTicketStatusRequest) GetTicketId() int32 {
+	if x != nil {
+		return x.TicketId
+	}
+	return 0
+}
+
+func (x *UpdateTicketStatusRequest) GetStatus() string {
+	if x != nil {
+		return x.Status
+	}
+	return ""
+}
+
+type UpdateTicketStatusResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	TicketId      int32                  `protobuf:"varint,1,opt,name=ticket_id,json=ticketId,proto3" json:"ticket_id,omitempty"`
+	Status        string                 `protobuf:"bytes,2,opt,name=status,proto3" json:"status,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *UpdateTicketStatusResponse) Reset() {
+	*x = UpdateTicketStatusResponse{}
+	mi := &file_ticket_proto_msgTypes[4]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *UpdateTicketStatusResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*UpdateTicketStatusResponse) ProtoMessage() {}
+
+func (x *UpdateTicketStatusResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_ticket_proto_msgTypes[4]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use UpdateTicketStatusResponse.ProtoReflect.Descriptor instead.
+func (*UpdateTicketStatusResponse) Descriptor() ([]byte, []int) {
+	return file_ticket_proto_rawDescGZIP(), []int{4}
+}
+
+func (x *UpdateTicketStatusResponse) GetTicketId() int32 {
+	if x != nil {
+		return x.TicketId
+	}
+	return 0
+}
+
+func (x *UpdateTicketStatusResponse) GetStatus() string {
+	if x != nil {
+		return x.Status
+	}
+	return ""
+}
+
 var File_ticket_proto protoreflect.FileDescriptor
 
 const file_ticket_proto_rawDesc = "" +
@@ -219,10 +323,17 @@ const file_ticket_proto_rawDesc = "" +
 	"\x1bTicketBySeatAndEventRequest\x12\x1d\n" +
 	"\n" +
 	"event_name\x18\x01 \x01(\tR\teventName\x12\x17\n" +
-	"\aseat_id\x18\x02 \x01(\tR\x06seatId2\xa3\x01\n" +
+	"\aseat_id\x18\x02 \x01(\tR\x06seatId\"P\n" +
+	"\x19UpdateTicketStatusRequest\x12\x1b\n" +
+	"\tticket_id\x18\x01 \x01(\x05R\bticketId\x12\x16\n" +
+	"\x06status\x18\x02 \x01(\tR\x06status\"Q\n" +
+	"\x1aUpdateTicketStatusResponse\x12\x1b\n" +
+	"\tticket_id\x18\x01 \x01(\x05R\bticketId\x12\x16\n" +
+	"\x06status\x18\x02 \x01(\tR\x06status2\x80\x02\n" +
 	"\rTicketService\x12:\n" +
 	"\tGetTicket\x12\x15.ticket.TicketRequest\x1a\x16.ticket.TicketResponse\x12V\n" +
-	"\x17GetTicketBySeatAndEvent\x12#.ticket.TicketBySeatAndEventRequest\x1a\x16.ticket.TicketResponseBBZ@github.com/dwikikusuma/ticket-rush/common/gen/ticket/v1;ticketv1b\x06proto3"
+	"\x17GetTicketBySeatAndEvent\x12#.ticket.TicketBySeatAndEventRequest\x1a\x16.ticket.TicketResponse\x12[\n" +
+	"\x12UpdateTicketStatus\x12!.ticket.UpdateTicketStatusRequest\x1a\".ticket.UpdateTicketStatusResponseBBZ@github.com/dwikikusuma/ticket-rush/common/gen/ticket/v1;ticketv1b\x06proto3"
 
 var (
 	file_ticket_proto_rawDescOnce sync.Once
@@ -236,19 +347,23 @@ func file_ticket_proto_rawDescGZIP() []byte {
 	return file_ticket_proto_rawDescData
 }
 
-var file_ticket_proto_msgTypes = make([]protoimpl.MessageInfo, 3)
+var file_ticket_proto_msgTypes = make([]protoimpl.MessageInfo, 5)
 var file_ticket_proto_goTypes = []any{
 	(*TicketRequest)(nil),               // 0: ticket.TicketRequest
 	(*TicketResponse)(nil),              // 1: ticket.TicketResponse
 	(*TicketBySeatAndEventRequest)(nil), // 2: ticket.TicketBySeatAndEventRequest
+	(*UpdateTicketStatusRequest)(nil),   // 3: ticket.UpdateTicketStatusRequest
+	(*UpdateTicketStatusResponse)(nil),  // 4: ticket.UpdateTicketStatusResponse
 }
 var file_ticket_proto_depIdxs = []int32{
 	0, // 0: ticket.TicketService.GetTicket:input_type -> ticket.TicketRequest
 	2, // 1: ticket.TicketService.GetTicketBySeatAndEvent:input_type -> ticket.TicketBySeatAndEventRequest
-	1, // 2: ticket.TicketService.GetTicket:output_type -> ticket.TicketResponse
-	1, // 3: ticket.TicketService.GetTicketBySeatAndEvent:output_type -> ticket.TicketResponse
-	2, // [2:4] is the sub-list for method output_type
-	0, // [0:2] is the sub-list for method input_type
+	3, // 2: ticket.TicketService.UpdateTicketStatus:input_type -> ticket.UpdateTicketStatusRequest
+	1, // 3: ticket.TicketService.GetTicket:output_type -> ticket.TicketResponse
+	1, // 4: ticket.TicketService.GetTicketBySeatAndEvent:output_type -> ticket.TicketResponse
+	4, // 5: ticket.TicketService.UpdateTicketStatus:output_type -> ticket.UpdateTicketStatusResponse
+	3, // [3:6] is the sub-list for method output_type
+	0, // [0:3] is the sub-list for method input_type
 	0, // [0:0] is the sub-list for extension type_name
 	0, // [0:0] is the sub-list for extension extendee
 	0, // [0:0] is the sub-list for field type_name
@@ -265,7 +380,7 @@ func file_ticket_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_ticket_proto_rawDesc), len(file_ticket_proto_rawDesc)),
 			NumEnums:      0,
-			NumMessages:   3,
+			NumMessages:   5,
 			NumExtensions: 0,
 			NumServices:   1,
 		},

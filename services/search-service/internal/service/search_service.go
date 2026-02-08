@@ -60,3 +60,7 @@ func (s *searchService) FindTicketByID(ctx context.Context, id int) (*domain.Tic
 func (s *searchService) FindTicketBySeatAndEvent(ctx context.Context, eventName string, seatID string) (*domain.Ticket, error) {
 	return s.dbRepo.GetEventSeat(ctx, eventName, seatID)
 }
+
+func (s *searchService) UpdateTicketStatusToSold(ctx context.Context, id int) error {
+	return s.dbRepo.UpdateTicketStatusToSold(ctx, id)
+}

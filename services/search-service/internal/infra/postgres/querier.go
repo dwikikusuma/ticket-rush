@@ -11,6 +11,7 @@ import (
 type Querier interface {
 	GetTicketByID(ctx context.Context, id int32) (Ticket, error)
 	GetTicketBySeatAndEvent(ctx context.Context, arg GetTicketBySeatAndEventParams) (Ticket, error)
+	UpdateTicketStatus(ctx context.Context, arg UpdateTicketStatusParams) error
 }
 
 var _ Querier = (*Queries)(nil)
