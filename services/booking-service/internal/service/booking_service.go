@@ -49,6 +49,16 @@ func (s *BookingService) CreateBooking(ctx context.Context, userID, eventName, s
 		return errors.New("ticket is not available")
 	}
 
+	_, err = s.ticketSvc.UpdateTicketStatus(ctx, &ticketPB.UpdateTicketStatusRequest{
+		TicketId: ticketDetail.TicketId,
+		Status:   "Sold",
+	})
+
+	if err != nil {
+		log.Printf("failed to update ticket status: %v", err)
+		return err
+	}
+
 	err = s.repo.CreateBooking(ctx, domain.Booking{
 		UserID:   userID,
 		Status:   "Booked",
@@ -57,17 +67,10 @@ func (s *BookingService) CreateBooking(ctx context.Context, userID, eventName, s
 
 	if err != nil {
 		log.Printf("failed to create booking: %v", err)
-		return err
-	}
-
-	_, err = s.ticketSvc.UpdateTicketStatus(ctx, &ticketPB.UpdateTicketStatusRequest{
-		TicketId: ticketDetail.TicketId,
-		Status:   "Sold",
-	})
-
-	if err != nil {
-		log.Printf("failed to update ticket status: %v", err)
-		_ = s.repo.UpdateBookingStatusFailed(ctx, userID)
+		_, _ = s.ticketSvc.UpdateTicketStatus(ctx, &ticketPB.UpdateTicketStatusRequest{
+			TicketId: ticketDetail.TicketId,
+			Status:   "AVAILABLE",
+		})
 		return err
 	}
 
