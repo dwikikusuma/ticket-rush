@@ -3,25 +3,36 @@ package service
 import (
 	"context"
 	"errors"
+	"fmt"
 	"log"
+	"time"
 
 	ticketPB "github.com/dwikikusuma/ticket-rush/common/gen/ticket/v1"
 	"github.com/dwikikusuma/ticket-rush/services/booking-service/internal/domain"
+	"github.com/redis/go-redis/v9"
 )
 
 type BookingService struct {
-	repo      domain.BookingRepo
-	ticketSvc ticketPB.TicketServiceClient
+	repo        domain.BookingRepo
+	ticketSvc   ticketPB.TicketServiceClient
+	redisClient *redis.Client
 }
 
-func NewBookingService(repo domain.BookingRepo, ticketSvc ticketPB.TicketServiceClient) *BookingService {
+func NewBookingService(repo domain.BookingRepo, ticketSvc ticketPB.TicketServiceClient, redisClient *redis.Client) *BookingService {
 	return &BookingService{
-		repo:      repo,
-		ticketSvc: ticketSvc,
+		repo:        repo,
+		ticketSvc:   ticketSvc,
+		redisClient: redisClient,
 	}
 }
 
 func (s *BookingService) CreateBooking(ctx context.Context, userID, eventName, seat string) error {
+	lockKey := s.getTicketCacheKey(eventName, seat)
+
+	if err := s.acquireLock(ctx, lockKey); err != nil {
+		return err
+	}
+	defer s.releaseLock(ctx, lockKey)
 
 	ticketDetail, err := s.ticketSvc.GetTicketBySeatAndEvent(ctx, &ticketPB.TicketBySeatAndEventRequest{
 		EventName: eventName,
@@ -61,4 +72,27 @@ func (s *BookingService) CreateBooking(ctx context.Context, userID, eventName, s
 	}
 
 	return nil
+}
+
+func (s *BookingService) acquireLock(ctx context.Context, key string) error {
+	acquired, err := s.redisClient.SetNX(ctx, key, "locked", 10*time.Second).Result()
+
+	if err != nil {
+		return fmt.Errorf("redis connection error: %v", err)
+	}
+
+	if !acquired {
+		return errors.New("ticket is currently being booked by another user")
+	}
+
+	return nil
+}
+
+func (s *BookingService) releaseLock(ctx context.Context, key string) error {
+	_, err := s.redisClient.Del(ctx, key).Result()
+	return err
+}
+
+func (s *BookingService) getTicketCacheKey(eventName, seat string) string {
+	return "lock:" + eventName + ":" + seat
 }
