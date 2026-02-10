@@ -18,20 +18,25 @@ func NewBookingRepo(db *sql.DB) domain.BookingRepo {
 	return &bookingRepo{db: bookingDB.New(db)}
 }
 
-func (r *bookingRepo) CreateBooking(ctx context.Context, req domain.Booking) error {
+func (r *bookingRepo) CreateBooking(ctx context.Context, req domain.Booking) (string, error) {
 	userUUID, err := uuid.Parse(req.UserID)
+
 	if err != nil {
 		log.Printf("invalid user ID: %v", err)
-		return err
+		return "", err
 	}
 	params := bookingDB.CreateBookingParams{
 		UserID:   userUUID,
 		TicketID: int32(req.TicketID),
 		Status:   req.Status,
 	}
-	_, err = r.db.CreateBooking(ctx, params)
+	booking, err := r.db.CreateBooking(ctx, params)
+	if err != nil {
+		log.Printf("failed to create booking: %v", err)
+		return "", err
+	}
 
-	return err
+	return booking.ID.String(), nil
 }
 
 func (r *bookingRepo) UpdateBookingStatusFailed(ctx context.Context, bookingID string) error {

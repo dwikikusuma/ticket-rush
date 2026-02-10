@@ -8,6 +8,7 @@ import (
 
 	ticketV1 "github.com/dwikikusuma/ticket-rush/common/gen/ticket/v1"
 	"github.com/dwikikusuma/ticket-rush/common/pkg/db"
+	"github.com/dwikikusuma/ticket-rush/common/pkg/events"
 	"github.com/dwikikusuma/ticket-rush/common/pkg/middleware"
 	handler2 "github.com/dwikikusuma/ticket-rush/services/booking-service/internal/handler"
 	"github.com/dwikikusuma/ticket-rush/services/booking-service/internal/repository"
@@ -19,8 +20,9 @@ import (
 )
 
 var (
-	ticketAddr = "localhost:50061"
-	port       = "8085"
+	ticketAddr  = "localhost:50061"
+	port        = "8085"
+	kafkaBroker = "localhost:9092"
 )
 
 func main() {
@@ -33,9 +35,11 @@ func main() {
 	}
 	ticketSVC := ticketV1.NewTicketServiceClient(ticketConn)
 	redisClient := newRedisClient()
+	producer := events.NewProducer([]string{kafkaBroker})
+	defer producer.Close()
 
 	bookRepo := repository.NewBookingRepo(dbConn)
-	bookSvc := service.NewBookingService(bookRepo, ticketSVC, redisClient)
+	bookSvc := service.NewBookingService(bookRepo, ticketSVC, redisClient, producer)
 	handler := handler2.NewBookingHandler(bookSvc)
 
 	r := gin.Default()
