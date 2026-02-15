@@ -20,6 +20,7 @@ const (
 	consumerGroup = "fulfillment-service-consumer-group-v2"
 	bookingTopic  = "booking.created"
 	mongoURI      = "mongodb://user:password@localhost:27017"
+	dlqTopic      = "dlq.booking"
 )
 
 func main() {
@@ -35,10 +36,13 @@ func main() {
 	collection := client.Database("ticket_rush").Collection("receipts")
 	repo := repository.NewMongoRepo(collection)
 
+	dlqProducer := events.NewProducer([]string{kafkaBroker})
+	defer dlqProducer.Close()
+
 	consumer := events.NewConsumer([]string{kafkaBroker}, consumerGroup, bookingTopic)
 	defer consumer.Close()
 
-	consumerWorker := domain.NewConsumerWorker(consumer, repo)
+	consumerWorker := domain.NewConsumerWorker(consumer, repo, dlqProducer)
 
 	var wg sync.WaitGroup
 

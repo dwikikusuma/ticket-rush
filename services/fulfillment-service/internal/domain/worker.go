@@ -13,14 +13,16 @@ import (
 )
 
 type ConsumerWorker struct {
-	consumer *events.Consumer
-	db       ReceiptRepo
+	consumer    *events.Consumer
+	db          ReceiptRepo
+	dlqProducer *events.Producer
 }
 
-func NewConsumerWorker(consumer *events.Consumer, db ReceiptRepo) *ConsumerWorker {
+func NewConsumerWorker(consumer *events.Consumer, db ReceiptRepo, dlqProducer *events.Producer) *ConsumerWorker {
 	return &ConsumerWorker{
-		consumer: consumer,
-		db:       db,
+		consumer:    consumer,
+		db:          db,
+		dlqProducer: dlqProducer,
 	}
 }
 
@@ -48,9 +50,7 @@ func (w *ConsumerWorker) Start(ctx context.Context) {
 
 		if decodeErr := json.Unmarshal(mess.Value, &eventData); decodeErr != nil {
 			log.Printf("Error unmarshaling message: %v", decodeErr)
-			if commErr := w.consumer.CommitMessages(ctx, mess); commErr != nil {
-				log.Printf("Error committing message: %v", commErr)
-			}
+			w.handleFailedMessage(ctx, mess, "JSON_UNMARSHAL_ERROR", decodeErr)
 			continue
 		}
 
@@ -65,12 +65,13 @@ func (w *ConsumerWorker) Start(ctx context.Context) {
 
 		if err = w.saveWithRetry(params); err != nil {
 			log.Printf("Error saving receipt after retries: %v", err)
-			w.handleFailedMessage(ctx, mess)
+			w.handleFailedMessage(ctx, mess, "DB_SAVE_ERROR", err)
 			continue
 		}
 
 		if err = w.consumer.CommitMessages(ctx, mess); err != nil {
 			log.Printf("Error committing message: %v", err)
+			w.handleFailedMessage(ctx, mess, "KAFKA_COMMIT_ERROR", err)
 		} else {
 			log.Printf("Successfully processed message for BookingID=%s", eventData.BookingID)
 		}
@@ -93,9 +94,26 @@ func (w *ConsumerWorker) saveWithRetry(data Receipt) error {
 	return errors.New("failed to save receipt after multiple attempts")
 }
 
-func (w *ConsumerWorker) handleFailedMessage(ctx context.Context, msg kafka.Message) {
+func (w *ConsumerWorker) handleFailedMessage(ctx context.Context, msg kafka.Message, reason string, err error) {
 	log.Println("Handling failed message will be implemented later")
-	if err := w.consumer.CommitMessages(ctx, msg); err != nil {
+	dlqMsg := events.DlqMessage{
+		Payload:     msg.Value,
+		ErrorReason: reason,
+		ErrorDetail: err,
+		FailedAt:    time.Now(),
+		Service:     "fulfillment-service",
+	}
+
+	dlqData, marshalErr := json.Marshal(dlqMsg)
+	if marshalErr != nil {
+		log.Printf("Error marshaling DLQ message: %v", marshalErr)
+	}
+
+	if pubErr := w.dlqProducer.Publish(ctx, "dlq.booking", "", dlqData); pubErr != nil {
+		log.Printf("Error publishing DLQ message: %v", pubErr)
+	}
+
+	if err = w.consumer.CommitMessages(ctx, msg); err != nil {
 		log.Printf("Error committing failed message: %v", err)
 	}
 }
