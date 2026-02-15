@@ -21,7 +21,7 @@ import (
 
 var (
 	ticketAddr  = "localhost:50061"
-	port        = "8085"
+	port        = "8086"
 	kafkaBroker = "localhost:9092"
 )
 
