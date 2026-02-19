@@ -18,7 +18,7 @@ const SKELETON_COUNT = 6;
 
 export default function Home() {
   const auth = useAuth();
-  const tickets = useTickets();
+  const tickets = useTickets(auth.token);
   const booking = useBooking(auth.token);
   const { toasts, addToast, dismiss } = useToast();
 

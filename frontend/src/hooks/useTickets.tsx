@@ -7,7 +7,7 @@ import type { Ticket } from "../types";
 const DEBOUNCE_MS = 400;
 const PAGE_LIMIT = 20;
 
-export function useTickets() {
+export function useTickets(token?: string | null) {
   const [tickets, setTickets] = useState<Ticket[]>([]);
   const [cursor, setCursor] = useState<string | undefined>(undefined);
   const [hasMore, setHasMore] = useState(false);
@@ -18,13 +18,12 @@ export function useTickets() {
 
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  /** Replaces current ticket list with fresh results. */
   const search = useCallback(async (q: string) => {
     setLoading(true);
     setError(null);
     setCursor(undefined);
     try {
-      const res = await searchApi.search(q, PAGE_LIMIT);
+      const res = await searchApi.search(q, PAGE_LIMIT, undefined, token);
       setTickets(res.data ?? []);
       setCursor(res.next_cursor || undefined);
       setHasMore(!!res.next_cursor);
@@ -33,15 +32,14 @@ export function useTickets() {
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [token]);
 
-  /** Appends next page to existing ticket list. */
   const loadMore = useCallback(async () => {
     if (!cursor || loadingMore) return;
     setLoadingMore(true);
     setError(null);
     try {
-      const res = await searchApi.search(query, PAGE_LIMIT, cursor);
+      const res = await searchApi.search(query, PAGE_LIMIT, cursor, token);
       setTickets((prev) => [...prev, ...(res.data ?? [])]);
       setCursor(res.next_cursor || undefined);
       setHasMore(!!res.next_cursor);
@@ -50,9 +48,8 @@ export function useTickets() {
     } finally {
       setLoadingMore(false);
     }
-  }, [cursor, loadingMore, query]);
+  }, [cursor, loadingMore, query, token]);
 
-  /** Debounced input handler — call this from your SearchBar onChange. */
   const onQueryChange = useCallback(
     (q: string) => {
       setQuery(q);

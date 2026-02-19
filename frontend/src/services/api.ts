@@ -35,10 +35,17 @@ export const authApi = {
 };
 
 export const searchApi = {
-  search: (q: string, limit = 20, cursor?: string): Promise<SearchResponse> => {
+  search: (
+    q: string,
+    limit = 20,
+    cursor?: string,
+    token?: string | null
+  ): Promise<SearchResponse> => {
     const params = new URLSearchParams({ q, limit: String(limit) });
     if (cursor) params.set("cursor", cursor);
-    return fetch(`${SEARCH_URL}/search?${params}`).then(
+    const headers: Record<string, string> = {};
+    if (token) headers["Authorization"] = `Bearer ${token}`;
+    return fetch(`${SEARCH_URL}/search?${params}`, { headers }).then(
       handleResponse<SearchResponse>
     );
   },
