@@ -15,6 +15,7 @@ import (
 	"github.com/dwikikusuma/ticket-rush/services/booking-service/internal/service"
 	"github.com/gin-gonic/gin"
 	"github.com/redis/go-redis/v9"
+	ginprometheus "github.com/zsais/go-gin-prometheus"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
 )
@@ -43,6 +44,10 @@ func main() {
 	handler := handler2.NewBookingHandler(bookSvc)
 
 	r := gin.Default()
+
+	p := ginprometheus.NewPrometheus("gin")
+	p.Use(r)
+
 	r.Use(
 		middleware.AuthMiddleware(),
 		middleware.RequestID(),

@@ -12,6 +12,7 @@ import (
 	"github.com/dwikikusuma/ticket-rush/services/auth-service/internal/service"
 	"github.com/gin-gonic/gin"
 	_ "github.com/jackc/pgx/v5/stdlib"
+	ginprometheus "github.com/zsais/go-gin-prometheus"
 )
 
 const (
@@ -48,6 +49,10 @@ func main() {
 	config.LoadConfig()
 
 	r := gin.Default()
+
+	p := ginprometheus.NewPrometheus("gin")
+	p.Use(r)
+
 	authHandler.RegisterRoutes(r)
 
 	var wg sync.WaitGroup

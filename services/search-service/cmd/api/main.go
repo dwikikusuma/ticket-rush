@@ -17,6 +17,7 @@ import (
 	ticketSvc "github.com/dwikikusuma/ticket-rush/services/search-service/internal/service"
 	"github.com/elastic/go-elasticsearch/v8"
 	"github.com/gin-gonic/gin"
+	ginprometheus "github.com/zsais/go-gin-prometheus"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/reflection"
 )
@@ -59,6 +60,9 @@ func main() {
 	if err != nil {
 		log.Fatalf("Failed to listen on %s: %v", rpcAddr, err)
 	}
+
+	p := ginprometheus.NewPrometheus("gin")
+	p.Use(r)
 
 	r.Use(func(c *gin.Context) {
 		c.Writer.Header().Set("Access-Control-Allow-Origin", "*")

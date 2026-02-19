@@ -11,6 +11,8 @@ import (
 	"github.com/dwikikusuma/ticket-rush/common/pkg/events"
 	"github.com/dwikikusuma/ticket-rush/services/fulfillment-service/internal/domain"
 	"github.com/dwikikusuma/ticket-rush/services/fulfillment-service/internal/repository"
+	"github.com/gin-gonic/gin"
+	ginprometheus "github.com/zsais/go-gin-prometheus"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
@@ -45,6 +47,19 @@ func main() {
 	consumerWorker := domain.NewConsumerWorker(consumer, repo, dlqProducer)
 
 	var wg sync.WaitGroup
+
+	wg.Add(1)
+	go func() {
+		defer wg.Done()
+		r := gin.Default()
+		p := ginprometheus.NewPrometheus("gin")
+		p.Use(r)
+
+		log.Println("Metrics server listening on :9091")
+		if err := r.Run(":9091"); err != nil {
+			log.Printf("Metrics server failed: %v", err)
+		}
+	}()
 
 	wg.Add(1)
 	go func() {
