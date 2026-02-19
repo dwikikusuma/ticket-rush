@@ -4,6 +4,7 @@ go 1.25.1
 
 require (
 	github.com/elastic/go-elasticsearch/v8 v8.19.1
+	github.com/gin-contrib/cors v1.7.6
 	github.com/gin-gonic/gin v1.11.0
 	github.com/go-faker/faker/v4 v4.7.0
 	github.com/golang-jwt/jwt/v5 v5.3.0

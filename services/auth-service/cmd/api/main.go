@@ -10,6 +10,7 @@ import (
 	"github.com/dwikikusuma/ticket-rush/services/auth-service/internal/handler"
 	"github.com/dwikikusuma/ticket-rush/services/auth-service/internal/repository"
 	"github.com/dwikikusuma/ticket-rush/services/auth-service/internal/service"
+	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 	_ "github.com/jackc/pgx/v5/stdlib"
 	ginprometheus "github.com/zsais/go-gin-prometheus"
@@ -49,7 +50,13 @@ func main() {
 	config.LoadConfig()
 
 	r := gin.Default()
-
+	r.Use(cors.New(cors.Config{
+		AllowOrigins:     []string{"http://localhost:3000"},
+		AllowMethods:     []string{"GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"},
+		AllowHeaders:     []string{"Origin", "Content-Type", "Authorization", "Accept"},
+		ExposeHeaders:    []string{"Content-Length"},
+		AllowCredentials: true,
+	}))
 	p := ginprometheus.NewPrometheus("gin")
 	p.Use(r)
 
